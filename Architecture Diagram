@@ -1,0 +1,44 @@
+                            +-----------------------+
+                            |    Physical Sensors   |
+                            |  (Trucks, Forklifts)  |
+                            +-----------+-----------+
+                                        |
+                                        | POST /api/v1/events/
+                                        v
++-----------------------------------------------------------------------------------+
+|                                 DJANGO WEB SERVER                                 |
+|                                                                                   |
+|  +--------------------+      +--------------------+      +--------------------+   |
+|  |   API Endpoint     |      |    Distributed     |      |    Validation &    |   |
+|  | (SensorEventView)  |----->|   Lock (Redis)     |----->|   Deduplication    |   |
+|  |                    |      |  [SETNX]           |      |   (event_id)       |   |
+|  +--------------------+      +--------------------+      +--------------------+   |
++-----------------------------------------------------------------------------------+
+         |                              |                             |
+         | Save Event (Async)           | Update Live State           | Save to DB
+         v                              v                             v
++------------------+           +------------------+          +------------------+
+|   RABBITMQ       |           |      REDIS       |          |   POSTGRESQL     |
+| (Message Broker) |           |  (In-Memory DB)  |          | (Relational DB)  |
++------------------+           +------------------+          +------------------+
+         |                              ^                             ^
+         | Consume Tasks                | Read/Write State            | Audit Logs
+         v                              |                             | (TrafficSignalLog)
++-----------------------------------------------------------------------------------+
+|                             CELERY WORKER & BEAT                                  |
+|                                                                                   |
+|  +--------------------+      +--------------------+      +--------------------+   |
+|  | Signal State       |      |  Priority Queue    |      |   Background       |   |
+|  | Machine (Green ->  |      |  Scoring Logic     |      |   Monitors         |   |
+|  | Yellow -> All Red) |      |  (Emergency > ...) |      |   (Sensor Health)  |   |
+|  +--------------------+      +--------------------+      +--------------------+   |
++-----------------------------------------------------------------------------------+
+                                        |
+                                        | Updates
+                                        v
++-----------------------------------------------------------------------------------+
+|                            FRONTEND DASHBOARD (HTML/JS)                           |
+|                                                                                   |
+|  - Polls GET /api/v1/junctions/<id>/state/ every 1 second.                        |
+|  - Displays Live Signal Lights, Vehicle Queues (with Icons), and Analytics.       |
++-----------------------------------------------------------------------------------+

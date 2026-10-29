@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTMS | Control Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #060b14;
+            --bg-panel: rgba(15, 23, 42, 0.65);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --color-green: #10b981;
+            --color-yellow: #f59e0b;
+            --color-red: #ef4444;
+            --color-blue: #3b82f6;
+            --glow-green: rgba(16, 185, 129, 0.5);
+            --glow-yellow: rgba(245, 158, 11, 0.5);
+            --glow-red: rgba(239, 68, 68, 0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+            color: var(--text-main); 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 24px;
+        }
+
+        .dashboard-container { width: 100%; max-width: 1100px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        /* Header */
+        .header { 
+            grid-column: span 2; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid var(--border-color); 
+        }
+        
+        .header h1 { 
+            font-size: 26px; 
+            font-weight: 700; 
+            letter-spacing: -0.5px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        
+        .header h1::before { 
+            content: ''; 
+            display: inline-block; 
+            width: 14px; 
+            height: 14px; 
+            border-radius: 50%; 
+            background-color: var(--color-green); 
+            box-shadow: 0 0 15px var(--glow-green); 
+            animation: pulse 2s infinite; 
+        }
+        
+        .header h1 span { 
+            color: var(--color-blue); 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 22px; 
+            background: rgba(59, 130, 246, 0.1); 
+            padding: 2px 12px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(59, 130, 246, 0.2); 
+        }
+        
+        .header-right { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+        
+        .status-badge { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            background: var(--bg-panel); 
+            border: 1px solid var(--border-color); 
+            padding: 10px 18px; 
+            border-radius: 99px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            backdrop-filter: blur(12px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+        }
+        
+        .status-badge span.mode { color: var(--color-blue); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+        .dot.ok { background: var(--color-green); box-shadow: 0 0 10px var(--glow-green); }
+        .dot.bad { background: var(--color-red); box-shadow: 0 0 10px var(--glow-red); }
+        .dot.warn { background: var(--color-yellow); box-shadow: 0 0 10px var(--glow-yellow); }
+        
+        /* Premium Switcher */
+        .switcher { 
+            display: flex; 
+            align-items: center; 
+            background: var(--bg-panel); 
+            border: 1px solid var(--border-color); 
+            border-radius: 99px; 
+            padding: 4px 4px 4px 16px; 
+            backdrop-filter: blur(12px); 
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .switcher:focus-within {
+            border-color: var(--color-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .switcher label { 
+            font-size: 12px; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            margin-right: 8px; 
+        }
+        
+        .switcher input { 
+            width: 110px; 
+            background: transparent; 
+            border: none; 
+            outline: none; 
+            color: var(--text-main); 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 14px; 
+            font-weight: 700; 
+        }
+        
+        .switcher input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .switcher button { 
+            border: none; 
+            cursor: pointer; 
+            padding: 8px 20px; 
+            border-radius: 99px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: white; 
+            background: linear-gradient(135deg, #2563eb, #7c3aed); 
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+        
+        .switcher button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Cards */
+        .card { 
+            background: var(--bg-panel); 
+            border: 1px solid var(--border-color); 
+            border-radius: 24px; 
+            padding: 28px; 
+            backdrop-filter: blur(16px); 
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4); 
+        }
+        
+        .card-title { 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            color: var(--text-muted); 
+            margin-bottom: 28px; 
+            font-weight: 700; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .phase-label { 
+            font-family: 'JetBrains Mono', monospace; 
+            font-size: 13px; 
+            color: var(--color-blue); 
+            background: rgba(59, 130, 246, 0.1); 
+            padding: 4px 12px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(59, 130, 246, 0.2); 
+        }
+
+        /* Signal Lights */
+        .signals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; position: relative; }
+        .signals-grid::after { content: ''; position: absolute; left: 50%; top: 10%; height: 80%; width: 1px; background: linear-gradient(to bottom, transparent, var(--border-color), transparent); }
+        
+        .signal-group { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .signal-group h3 { font-size: 16px; font-weight: 600; color: var(--text-main); letter-spacing: 0.5px; }
+        
+        .signal-lights { display: flex; flex-direction: column; gap: 14px; background: #000; padding: 20px; border-radius: 99px; border: 2px solid #1e293b; box-shadow: inset 0 8px 20px rgba(0,0,0,0.9); }
+        
+        .light { width: 54px; height: 54px; border-radius: 50%; background: #111827; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: inset 0 4px 8px rgba(0,0,0,0.8); }
+        .light.red.active { background: var(--color-red); box-shadow: 0 0 30px var(--glow-red), inset 0 0 15px rgba(255,255,255,0.6); }
+        .light.yellow.active { background: var(--color-yellow); box-shadow: 0 0 30px var(--glow-yellow), inset 0 0 15px rgba(255,255,255,0.6); }
+        .light.green.active { background: var(--color-green); box-shadow: 0 0 30px var(--glow-green), inset 0 0 15px rgba(255,255,255,0.6); }
+
+        /* Queue & Analytics Sections */
+        .queues-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        
+        .queue-box { 
+            background: rgba(0, 0, 0, 0.25); 
+            border: 1px solid var(--border-color); 
+            border-radius: 16px; 
+            padding: 16px; 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .queue-box::before { 
+            content: ''; 
+            position: absolute; 
+            top: 0; left: 0; width: 100%; height: 3px; 
+            background: linear-gradient(90deg, transparent, var(--color-blue), transparent); 
+            opacity: 0.5; 
+        }
+        
+        .queue-box .dir-name { font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; }
+        
+        .vehicle-icons { display: flex; flex-direction: column; gap: 8px; align-items: center; min-height: 80px; }
+        .vehicle-row { display: flex; align-items: center; justify-content: space-between; width: 100%; background: rgba(255,255,255,0.03); padding: 4px 8px; border-radius: 8px; }
+        .vehicle-row svg { width: 18px; height: 18px; }
+        .vehicle-row .v-count { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--text-main); }
+        
+        .v-truck { color: #f59e0b; }
+        .v-forklift { color: #10b981; }
+        .v-employee { color: #3b82f6; }
+        .v-emergency { color: #ef4444; }
+        
+        .queue-box .total-count { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; margin-top: 12px; color: var(--text-main); border-top: 1px solid var(--border-color); padding-top: 12px; }
+
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(16,185,129,0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+        
+        @media (max-width: 768px) { 
+            .dashboard-container { grid-template-columns: 1fr; } 
+            .header { grid-column: span 1; flex-direction: column; align-items: flex-start; } 
+            .card { grid-column: span 1 !important; } 
+            .queues-grid { grid-template-columns: repeat(2, 1fr); }
+            .switcher { width: 100%; justify-content: space-between; }
+            .switcher input { flex-grow: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="header">
+            <h1>Junction <span id="junction-name">A</span> Control</h1>
+            <div class="header-right">
+                <form class="switcher" id="switch-form" autocomplete="off">
+                    <label for="junction-input">Junction ID</label>
+                    <input id="junction-input" type="text" spellcheck="false" maxlength="10" placeholder="e.g. A, B" />
+                    <button type="submit">Switch</button>
+                </form>
+                <div class="status-badge"><span class="dot" id="conn-dot"></span><span id="conn-text">Connecting</span></div>
+                <div class="status-badge">MODE: <span class="mode" id="current-mode">-</span></div>
+            </div>
+        </header>
+
+        <!-- Live Signal Status -->
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-title"><span>Live Signal Status</span><span class="phase-label" id="phase-label">-</span></div>
+            <div class="signals-grid">
+                <div class="signal-group">
+                    <h3>North / South</h3>
+                    <div class="signal-lights"><div class="light red" id="ns-red"></div><div class="light yellow" id="ns-yellow"></div><div class="light green" id="ns-green"></div></div>
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Phase A</span>
+                </div>
+                <div class="signal-group">
+                    <h3>East / West</h3>
+                    <div class="signal-lights"><div class="light red" id="ew-red"></div><div class="light yellow" id="ew-yellow"></div><div class="light green" id="ew-green"></div></div>
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Phase B</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Queues -->
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-title">Vehicle Queues (Live Breakdown)</div>
+            <div class="queues-grid" id="queues-container">
+                <!-- Queue boxes will be generated by JS -->
+            </div>
+        </div>
+
+        <!-- NEW: Traffic Analytics -->
+        <div class="card" style="grid-column: span 2;">
+            <div class="card-title">
+                <span>Traffic Analytics (Last 1 Hour)</span>
+                <span class="phase-label" id="analytics-label">Loading...</span>
+            </div>
+            <div class="queues-grid" id="analytics-container">
+                <!-- Analytics boxes will be generated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'ftms_junction';
+        let JUNCTION_ID = new URLSearchParams(location.search).get('junction') || localStorage.getItem(STORAGE_KEY) || 'A';
+        const el = id => document.getElementById(id);
+
+        function applyJunctionToUI() {
+            el('junction-name').textContent = JUNCTION_ID;
+            el('junction-input').value = JUNCTION_ID;
+            document.title = `FTMS | Junction ${JUNCTION_ID}`;
+        }
+
+        el('switch-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const next = el('junction-input').value.trim();
+            if (!next || next === JUNCTION_ID) return;
+            
+            JUNCTION_ID = next; 
+            localStorage.setItem(STORAGE_KEY, JUNCTION_ID);
+            const url = new URL(location.href); 
+            url.searchParams.set('junction', JUNCTION_ID); 
+            history.replaceState(null, '', url);
+            
+            applyJunctionToUI(); 
+            updateDashboard();
+            updateAnalytics();
+        });
+
+        function setConnection(kind, text) {
+            el('conn-dot').className = `dot ${kind}`;
+            el('conn-text').textContent = text;
+        }
+
+        function setLights(phase) {
+            document.querySelectorAll('.light').forEach(l => l.classList.remove('active'));
+            const map = { NS_GREEN: ['ns-green','ew-red'], NS_YELLOW: ['ns-yellow','ew-red'], EW_GREEN: ['ew-green','ns-red'], EW_YELLOW: ['ew-yellow','ns-red'], ALL_RED: ['ns-red','ew-red'] };
+            (map[phase] || []).forEach(id => el(id).classList.add('active'));
+        }
+
+        const ICONS = {
+            TRUCK: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17h4V5H2v12h3m5 0a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0m13 0a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0M14 9h4l3 4v4h-3"/></svg>`,
+            FORKLIFT: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17h10V6H8m-4 11a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0M14 9h5l3 8m0 0a2 2 0 1 1-4 0m4 0a2 2 0 1 0-4 0M17 17h-3"/></svg>`,
+            EMPLOYEE_VEHICLE: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>`,
+            EMERGENCY: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`
+        };
+
+        const VEHICLE_META = {
+            'TRUCK': { label: 'Truck', cls: 'v-truck' },
+            'FORKLIFT': { label: 'Forklift', cls: 'v-forklift' },
+            'EMPLOYEE_VEHICLE': { label: 'Employee', cls: 'v-employee' },
+            'EMERGENCY': { label: 'Emergency', cls: 'v-emergency' }
+        };
+
+        // --- Render Live Queues ---
+        function renderQueues(detailedQueues) {
+            const container = el('queues-container');
+            container.innerHTML = '';
+            const directions = ['NORTH', 'SOUTH', 'EAST', 'WEST'];
+
+            directions.forEach(dir => {
+                const dirQueues = detailedQueues[dir] || {};
+                let total = 0;
+                let rowsHtml = '';
+
+                Object.keys(VEHICLE_META).forEach(vType => {
+                    const count = dirQueues[vType] || 0;
+                    total += count;
+                    
+                    if (count > 0) {
+                        const meta = VEHICLE_META[vType];
+                        rowsHtml += `
+                            <div class="vehicle-row">
+                                <span class="${meta.cls}">${ICONS[vType]}</span>
+                                <span class="v-count">${count}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (total === 0) {
+                    rowsHtml = `<div style="color: var(--text-muted); font-size: 12px; margin: 20px 0;">Empty</div>`;
+                }
+
+                const box = document.createElement('div');
+                box.className = 'queue-box';
+                box.innerHTML = `
+                    <div class="dir-name">${dir}</div>
+                    <div class="vehicle-icons">${rowsHtml}</div>
+                    <div class="total-count">${total}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        // --- Render Analytics ---
+        function renderAnalytics(analytics) {
+            const container = el('analytics-container');
+            container.innerHTML = '';
+            const directions = ['NORTH', 'SOUTH', 'EAST', 'WEST'];
+
+            let totalVehicles = 0;
+            directions.forEach(dir => {
+                const dirData = analytics[dir] || {};
+                Object.values(dirData).forEach(c => totalVehicles += c);
+            });
+
+            el('analytics-label').textContent = `${totalVehicles} vehicles in 1h`;
+
+            directions.forEach(dir => {
+                const dirData = analytics[dir] || {};
+                let rowsHtml = '';
+
+                Object.keys(dirData).forEach(vType => {
+                    const count = dirData[vType];
+                    const meta = VEHICLE_META[vType] || { cls: '' };
+                    rowsHtml += `
+                        <div class="vehicle-row">
+                            <span class="${meta.cls}">${ICONS[vType] || ''}</span>
+                            <span class="v-count">${count}</span>
+                        </div>
+                    `;
+                });
+
+                if (!rowsHtml) {
+                    rowsHtml = `<div style="color: var(--text-muted); font-size: 12px; margin: 20px 0;">No data</div>`;
+                }
+
+                const box = document.createElement('div');
+                box.className = 'queue-box';
+                box.innerHTML = `
+                    <div class="dir-name">${dir}</div>
+                    <div class="vehicle-icons">${rowsHtml}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        // --- Fetch Dashboard State ---
+        function updateDashboard() {
+            const requestedId = JUNCTION_ID;
+            fetch(`/api/v1/junctions/${encodeURIComponent(requestedId)}/state/`)
+                .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+                .then(data => {
+                    if (requestedId !== JUNCTION_ID) return;
+
+                    setConnection('ok', 'Live');
+                    
+                    const modeEl = el('current-mode');
+                    modeEl.innerText = data.mode || '-';
+                    modeEl.style.color = data.mode === 'EMERGENCY' ? 'var(--color-red)' : data.mode === 'MANUAL' ? 'var(--color-yellow)' : 'var(--color-blue)';
+
+                    setLights(data.phase);
+                    el('phase-label').textContent = data.phase || '-';
+
+                    if (data.detailed_queues) {
+                        renderQueues(data.detailed_queues);
+                    } else if (data.queues) {
+                        const genericQueues = {};
+                        Object.keys(data.queues).forEach(dir => {
+                            genericQueues[dir] = { TRUCK: data.queues[dir] };
+                        });
+                        renderQueues(genericQueues);
+                    }
+                })
+                .catch(err => {
+                    if (requestedId !== JUNCTION_ID) return;
+                    setConnection('bad', 'Offline');
+                });
+        }
+
+        // --- Fetch Analytics ---
+        function updateAnalytics() {
+            const requestedId = JUNCTION_ID;
+            fetch(`/api/v1/junctions/${encodeURIComponent(requestedId)}/analytics/`)
+                .then(res => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
+                .then(data => {
+                    if (requestedId !== JUNCTION_ID) return;
+                    renderAnalytics(data.analytics || {});
+                })
+                .catch(err => console.warn('Analytics fetch failed', err));
+        }
+
+        // --- Init ---
+        applyJunctionToUI();
+        
+        // Poll every 1 second for live queues
+        setInterval(updateDashboard, 1000);
+        
+        // Poll every 10 seconds for analytics (less frequent to reduce load)
+        setInterval(updateAnalytics, 10000);
+        
+        // Initial load
+        updateDashboard();
+        updateAnalytics();
+    </script>
+</body>
+</html>

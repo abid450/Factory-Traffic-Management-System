@@ -1,0 +1,41 @@
+Factory_Traffic_Management/       <-- (Your main project folder)
+│
+├── .env.example                  <-- Environment variables template (no secrets)
+├── .gitignore                    <-- Git ignore rules
+├── docker-compose.yml            <-- Docker services (Web, DB, Redis, RabbitMQ, Celery)
+├── Dockerfile                    <-- Docker image for the web app
+├── manage.py                     <-- Django entry point
+├── pyproject.toml                <-- uv dependencies & pytest configuration
+├── uv.lock                       <-- uv lock file (pinned package versions)
+├── pytest.ini                    <-- (Optional) pytest configuration
+├── README.md                     <-- Main project documentation & architecture
+├── postman_collection.json       <-- Postman API testing collection
+│
+├── factory_core/                 <-- Main Django project folder
+│   ├── __init__.py               <-- Celery app import
+│   ├── asgi.py                   
+│   ├── celery.py                 <-- Celery app & Beat schedule
+│   ├── settings.py               <-- All configurations (DB, Redis, RabbitMQ)
+│   ├── urls.py                   <-- Main URL routing
+│   └── wsgi.py                   
+│
+└── traffic_control/              <-- Core Django app folder
+    ├── __init__.py
+    ├── admin.py                  <-- Django Admin configuration
+    ├── apps.py
+    ├── models.py                 <-- Database models (Junction, VehicleEvent, etc.)
+    ├── tasks.py                  <-- Celery tasks (signal timing, monitors)
+    ├── urls.py                   <-- App URL routing
+    ├── views.py                  <-- API views (Class-Based)
+    ├── tests/                    <-- pytest folder
+    │   ├── __init__.py
+    │   ├── test_api.py           <-- API tests
+    │   └── test_logic.py         <-- Logic tests
+    │
+    ├── core/                     <-- Business logic
+    │   ├── __init__.py
+    │   ├── queue_manager.py      <-- Queue processing & scoring
+    │   └── state_manager.py      <-- Redis state management & locking
+    │
+    └── templates/                <-- HTML files
+        └── dashboard.html        <-- Premium frontend dashboard

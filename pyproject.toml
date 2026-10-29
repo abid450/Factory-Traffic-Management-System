@@ -1,0 +1,54 @@
+[project]
+name = "factory-core"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+
+     # Core Framework
+    "django>=4.2,<5.0",
+    "djangorestframework>=3.15.0",
+    "django-cors-headers>=4.4.0",
+    "djangorestframework-simplejwt==5.3.0",
+    
+    # Async Tasks & Brokers
+    "celery>=5.4.0",
+    "redis>=5.0.0",
+    "django-redis==5.4.0",
+    "kombu>=5.4.0",
+    "django-celery-results==2.5.1",
+    "django-celery-beat>=2.5.0", 
+
+    "django-cors-headers==4.4.0",
+    "django-environ==0.11.2",
+    "django-filter==23.5",
+    "setuptools<82",
+    
+    # Database
+    "psycopg2-binary>=2.9.9",
+    
+    # Utilities
+    "python-dotenv>=1.0.1",
+    
+    # Optional: API Documentation & Testing (Recommended)
+    "drf-spectacular>=0.27.2",
+    "pytest>=8.3.0",
+    "pytest-django>=4.9.0",
+
+    "flower==2.0.0",
+    "pillow==10.4.0",
+    "python-decouple==3.8",
+     
+     # Unit testing
+    "pytest>=8.3.0",
+    "pytest-django>=4.9.0",
+
+
+]
+
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "factory_core.settings"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-v --tb=short"
